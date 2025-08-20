@@ -20,6 +20,7 @@ import MetricCardList from "../UI/MetricCardList";
 import AgentEcosystem from "../cards/AgentEcosystem";
 import AutonomousAssisted from "../cards/AutonomousAssisted";
 import ProjectDetailedCard from "../cards/ProjectDetailedCard";
+import OrchestratorTab from "./OrchestratorTab";
 
 const getInitialTab = (section) => {
   if (section === "agent-tasks" || section === "agent-exception") {
@@ -235,14 +236,7 @@ function AgentControl({ activeSection }) {
           </div>
         )}
 
-        {activeTab === "orchestrator" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Orchestrator</h2>
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <p className="text-gray-600">Orchestrator configuration and management</p>
-            </div>
-          </div>
-        )}
+        {activeTab === "orchestrator" && <OrchestratorTab />}
 
         {activeTab === "tasks" && (
           <div className="space-y-6">

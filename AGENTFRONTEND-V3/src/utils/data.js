@@ -62,8 +62,10 @@ export const SECTION_METADATA = {
 
 export const AIAGENTSNAVTABS = [
   { id: "agents", label: "Agents", icon: Users },
+  { id: "orchestrator", label: "Orchestrator", icon: Network },
+  { id: "lifecycle", label: "Lifecycle Management", icon: Workflow },
   { id: "performance", label: "Performance", icon: TrendingUp },
-  { id: "tasks", label: "Tasks", icon: CheckSquare },
+  { id: "tasks", label: "Tasks & Workflows", icon: CheckSquare },
   { id: "exceptions", label: "Exceptions", icon: AlertTriangle },
 ];
 

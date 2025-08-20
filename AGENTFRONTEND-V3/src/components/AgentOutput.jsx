@@ -1,6 +1,122 @@
 import { useState, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
 
+// Test Script Agent data
+const testScriptAgentData = {
+  "_id": {
+    "$oid": "68a30c205f4002b786bbf906"
+  },
+  "test_metrics": {
+    "total_test_cases": 32,
+    "automatable_tests": 28,
+    "automation_feasibility": 4,
+    "automation_coverage": 87.5,
+    "scripts_generated": {
+      "total": 10,
+      "web": 10,
+      "mobile": 0,
+      "api": 0
+    }
+  }
+};
+
+// Test Case Generator data
+const testCaseGeneratorData = [
+  {
+    "_id": "68a1c68c288ddc2502c07ad7",
+    "status": "success",
+    "action_performed": "export_all",
+    "file_path": "server/outputs/test-design/Testcases_20250817_120947.xlsx",
+    "count": 27,
+    "statistics": {
+      "total_documents": 5,
+      "total_test_cases": 27,
+      "by_type": {
+        "Functional": 27
+      },
+      "by_subtype": {
+        "happy": 7,
+        "error": 9,
+        "exception": 6,
+        "exploratory": 5
+      },
+      "by_document": [
+        {
+          "document_id": "68a1c68a288ddc2502c07ad0",
+          "test_cases_count": 5,
+          "path": "LoggedInUser [Entity, \"Authenticated user with dashboard access\"] --(SEES)--> UploadInvoiceButton [E..."
+        },
+        {
+          "document_id": "68a1c68a288ddc2502c07ad1",
+          "test_cases_count": 5,
+          "path": "LoggedInUser [Entity] --(SEES)--> UploadInvoiceButton [Entity] --(TRIGGERS)--> InvoiceFileSelector [..."
+        },
+        {
+          "document_id": "68a1c68a288ddc2502c07ad2",
+          "test_cases_count": 4,
+          "path": "DashboardPage [Entity, \"Accessible only if the user is logged in\"] --(SHOWS)--> UploadInvoiceButton ..."
+        },
+        {
+          "document_id": "68a1c68a288ddc2502c07ad3",
+          "test_cases_count": 4,
+          "path": "InvoiceUploadService [Entity] --(ON_SUCCESS)--> UploadConfirmation [Entity, \"Displays 'Invoice uploa..."
+        },
+        {
+          "document_id": "68a1c68a288ddc2502c07ad4",
+          "test_cases_count": 9,
+          "path": "UploadInvoiceButton [Entity] --(TRIGGERS)--> SystemFileDialog [Entity, \"Native file browser for sele..."
+        }
+      ]
+    },
+    "filters": {},
+    "message": "Successfully exported 27 test cases"
+  },
+  {
+    "_id": "68a1c3a1decb82c4b636a73f",
+    "status": "success",
+    "action_performed": "export_all",
+    "file_path": "server/outputs/test-design/TestCases_InvoiceUpload",
+    "count": 24,
+    "statistics": {
+      "total_documents": 5,
+      "total_test_cases": 24,
+      "by_type": {
+        "Functional": 24
+      },
+      "by_subtype": {
+        "happy": 5,
+        "error": 9,
+        "exception": 5,
+        "exploratory": 5
+      }
+    },
+    "filters": {},
+    "message": "Successfully exported 24 test cases"
+  },
+  {
+    "_id": "68a1c251c8db78d071ed47ae",
+    "status": "success",
+    "action_performed": "export_all",
+    "file_path": "server/outputs/test-design/Testcases_20250817_115145.xlsx",
+    "count": 23,
+    "statistics": {
+      "total_documents": 5,
+      "total_test_cases": 23,
+      "by_type": {
+        "Functional": 23
+      },
+      "by_subtype": {
+        "happy": 5,
+        "error": 8,
+        "exception": 5,
+        "exploratory": 5
+      }
+    },
+    "filters": {},
+    "message": "Successfully exported 23 test cases"
+  }
+];
+
 // ----- Function to extract statistics from real API JSON ------
 function extractStatistics(data) {
   if (!Array.isArray(data) || !data.length || !data[0].statistics) {
@@ -81,16 +197,26 @@ function AgentOutput({ onClose, agent }) {
     setActiveTab("output");
     setFeedbackOption("approve");
     setComments("");
-    // Fetch stats only for Test Case Generator Agent
-    if (name === "Test Case Generator Agent") {
-      setLoadingStats(true);
-      fetch("http://10.107.45.12:8080/api/testcases/all")
-        .then(res => res.json())
-        .then(data => setStatistics(extractStatistics(data)))
-        .catch(() => setStatistics({
-          total: "27", functional: "27", nonFunctional: "0", coverage: "82%", accuracy: "100%"
-        }))
-        .finally(() => setLoadingStats(false));
+    
+    // Set statistics based on agent type
+    if (name === "Test Case Generator Agent" || name === "Test Case Generator") {
+      const totalExports = testCaseGeneratorData.reduce((sum, item) => sum + item.count, 0);
+      setStatistics({
+        total: totalExports.toString(),
+        functional: totalExports.toString(),
+        nonFunctional: "0",
+        coverage: "89%",
+        accuracy: "100%"
+      });
+    } else if (name === "Test Script Generator Agent" || name === "Script Generator Agent") {
+      const scriptData = testScriptAgentData.test_metrics;
+      setStatistics({
+        total: scriptData.total_test_cases.toString(),
+        functional: scriptData.automatable_tests.toString(),
+        nonFunctional: "0",
+        coverage: scriptData.automation_coverage + "%",
+        accuracy: "94%"
+      });
     } else {
       setStatistics({
         total: "-", functional: "-", nonFunctional: "-", coverage: "-", accuracy: "-"
@@ -107,10 +233,12 @@ function AgentOutput({ onClose, agent }) {
       default: return "bg-gray-500";
     }
   }
+  
   function handleClose() {
     setIsVisible(false);
     setTimeout(() => onClose(false), 300);
   }
+  
   function handleSubmitFeedback() {
     console.log("Feedback submitted:", { feedbackOption, comments });
     setFeedbackOption("approve");
@@ -120,7 +248,8 @@ function AgentOutput({ onClose, agent }) {
 
   // Output Tab Content
   let outputTabContent;
-  if (name === "Test Case Generator Agent") {
+  
+  if (name === "Test Case Generator Agent" || name === "Test Case Generator") {
     outputTabContent = (
       <>
         {/* Statistics Grid */}
@@ -158,7 +287,172 @@ function AgentOutput({ onClose, agent }) {
             </div>
           </div>
         </div>
-        {/* Mock Test Cases */}
+
+        {/* Test Case Generator Data Display */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Export History</h3>
+          {testCaseGeneratorData.map((exportData, index) => (
+            <div key={index} className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="font-medium text-gray-900">Export #{index + 1}</h4>
+                  <p className="text-sm text-gray-600">{exportData.message}</p>
+                </div>
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                  {exportData.status.toUpperCase()}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                <div>
+                  <span className="text-gray-600">Test Cases:</span>
+                  <span className="font-medium text-gray-900 ml-2">{exportData.count}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Documents:</span>
+                  <span className="font-medium text-gray-900 ml-2">{exportData.statistics.total_documents}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between text-xs bg-gray-50 rounded-lg p-3">
+                {Object.entries(exportData.statistics.by_subtype).map(([type, count]) => (
+                  <div key={type} className="text-center">
+                    <div className="font-medium text-gray-900">{count}</div>
+                    <div className="text-gray-600 capitalize">{type}</div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-gray-500 mt-2">{exportData.file_path}</p>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  } else if (name === "Test Script Generator Agent" || name === "Script Generator Agent") {
+    outputTabContent = (
+      <>
+        {/* Statistics Grid */}
+        <div className="bg-blue-50 rounded-2xl p-6 mb-4">
+          <div className="grid grid-cols-5 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {statistics.coverage}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Coverage</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {statistics.total}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Total Cases</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {statistics.accuracy}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Accuracy</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {statistics.functional}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Automatable</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {testScriptAgentData.test_metrics.scripts_generated.total}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Scripts Generated</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Test Script Data Display */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Script Generation Summary</h3>
+          
+          <div className="bg-white border border-gray-200 rounded-2xl p-4">
+            <div className="grid grid-cols-2 gap-6 mb-4">
+              <div>
+                <span className="text-sm text-gray-600">Automation Feasibility:</span>
+                <div className="flex items-center mt-1">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2 mr-3">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full"
+                      style={{ width: `${(testScriptAgentData.test_metrics.automation_feasibility / 5) * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{testScriptAgentData.test_metrics.automation_feasibility}/5</span>
+                </div>
+              </div>
+              <div>
+                <span className="text-sm text-gray-600">Automation Coverage:</span>
+                <p className="text-xl font-bold text-green-600">{testScriptAgentData.test_metrics.automation_coverage}%</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="font-medium text-gray-900 mb-2">Generated Scripts Breakdown</h4>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-bold text-blue-600">{testScriptAgentData.test_metrics.scripts_generated.web}</div>
+                  <div className="text-xs text-gray-600">Web Scripts</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-green-600">{testScriptAgentData.test_metrics.scripts_generated.mobile}</div>
+                  <div className="text-xs text-gray-600">Mobile Scripts</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-purple-600">{testScriptAgentData.test_metrics.scripts_generated.api}</div>
+                  <div className="text-xs text-gray-600">API Scripts</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  } else {
+    // Original fallback for other agents
+    outputTabContent = (
+      <>
+        {/* Statistics Grid */}
+        <div className="bg-blue-50 rounded-2xl p-6 mb-4">
+          <div className="grid grid-cols-5 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {loadingStats ? <span className="animate-pulse">--</span> : statistics.coverage}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Coverage</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {loadingStats ? <span className="animate-pulse">--</span> : statistics.total}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Total Cases</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {loadingStats ? <span className="animate-pulse">--</span> : statistics.accuracy}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Accuracy</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {loadingStats ? <span className="animate-pulse">--</span> : statistics.functional}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Functional</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900">
+                {loadingStats ? <span className="animate-pulse">--</span> : statistics.nonFunctional}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Non-functional</div>
+            </div>
+          </div>
+        </div>
+        {/* Mock Test Cases for other agents */}
         <div>
           {mockTestCases.length === 0 ? (
             <div className="text-gray-400 text-center py-12">No test cases available for this agent.</div>
@@ -241,12 +535,6 @@ function AgentOutput({ onClose, agent }) {
           )}
         </div>
       </>
-    );
-  } else {
-    outputTabContent = (
-      <div className="bg-white border border-gray-200 rounded-2xl p-10 max-w-md mx-auto text-center text-gray-400 my-32">
-        No output to display for <span className="font-semibold">{name}</span>.
-      </div>
     );
   }
 
