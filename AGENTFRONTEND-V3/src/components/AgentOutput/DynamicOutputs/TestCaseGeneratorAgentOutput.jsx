@@ -1,5 +1,117 @@
-import { useState } from "react";
 import { Download, FileText, BarChart3, CheckCircle, FolderOpen, Users } from "lucide-react";
+
+const generatedTestCases = [
+  {
+    id: "TC_GEN_001",
+    title: "Valid invoice upload with successful dashboard update",
+    module: "Invoice Management",
+    type: "Functional",
+    subtype: "Happy Path",
+    priority: "High",
+    complexity: "Medium",
+    preconditions: "User logged in with upload permissions, valid invoice file available",
+    testSteps: [
+      "Navigate to Dashboard Page",
+      "Click 'Upload Invoice' button",
+      "Select valid invoice file (Invoice_Q4_2023.pdf)",
+      "Click 'Upload' button",
+      "Wait for upload completion"
+    ],
+    expectedResult: "Invoice uploaded successfully and visible on dashboard",
+    testData: "Invoice_Q4_2023.pdf (valid PDF format, size < 10MB)",
+    estimatedTime: "5 minutes",
+    generatedBy: "AI Test Generator v2.1",
+    status: "Generated"
+  },
+  {
+    id: "TC_GEN_002", 
+    title: "Upload invalid file format and verify error handling",
+    module: "Invoice Management",
+    type: "Functional",
+    subtype: "Error Handling",
+    priority: "Medium",
+    complexity: "Low",
+    preconditions: "User logged in, invalid file format available",
+    testSteps: [
+      "Navigate to Dashboard Page",
+      "Click 'Upload Invoice' button", 
+      "Select invalid file format (.exe file)",
+      "Attempt to upload",
+      "Verify error message"
+    ],
+    expectedResult: "Error message 'Invalid file format. Please upload PDF, JPG, or PNG files only.'",
+    testData: "malware.exe (executable file)",
+    estimatedTime: "3 minutes",
+    generatedBy: "AI Test Generator v2.1",
+    status: "Generated"
+  },
+  {
+    id: "TC_GEN_003",
+    title: "Upload oversized file and verify size validation", 
+    module: "Invoice Management",
+    type: "Functional",
+    subtype: "Exception Handling",
+    priority: "Medium",
+    complexity: "Low",
+    preconditions: "User logged in, oversized file available",
+    testSteps: [
+      "Navigate to Dashboard Page",
+      "Click 'Upload Invoice' button",
+      "Select oversized file (>10MB)",
+      "Attempt to upload", 
+      "Verify size limit error"
+    ],
+    expectedResult: "Error message 'File size exceeds 10MB limit. Please select a smaller file.'",
+    testData: "large_invoice.pdf (15MB PDF file)",
+    estimatedTime: "4 minutes", 
+    generatedBy: "AI Test Generator v2.1",
+    status: "Generated"
+  },
+  {
+    id: "TC_GEN_004",
+    title: "Verify upload progress indicator functionality",
+    module: "Invoice Management", 
+    type: "Functional",
+    subtype: "UI Validation",
+    priority: "Low",
+    complexity: "Medium",
+    preconditions: "User logged in, valid file available, stable internet connection",
+    testSteps: [
+      "Navigate to Dashboard Page",
+      "Click 'Upload Invoice' button",
+      "Select valid invoice file",
+      "Click 'Upload' and immediately observe progress",
+      "Verify progress indicator shows completion"
+    ],
+    expectedResult: "Progress indicator shows 0-100% upload progress and completion message",
+    testData: "invoice_medium.pdf (5MB PDF file)",
+    estimatedTime: "6 minutes",
+    generatedBy: "AI Test Generator v2.1", 
+    status: "Generated"
+  },
+  {
+    id: "TC_GEN_005",
+    title: "Test concurrent file uploads limitation",
+    module: "Invoice Management",
+    type: "Functional", 
+    subtype: "Boundary Testing",
+    priority: "Low",
+    complexity: "High",
+    preconditions: "User logged in, multiple valid files available",
+    testSteps: [
+      "Navigate to Dashboard Page",
+      "Attempt to upload multiple files simultaneously", 
+      "Verify system behavior",
+      "Check for proper error handling",
+      "Verify file queue management"
+    ],
+    expectedResult: "System allows only one upload at a time with proper queue management",
+    testData: "Multiple invoice files (invoice1.pdf, invoice2.pdf, invoice3.pdf)",
+    estimatedTime: "10 minutes",
+    generatedBy: "AI Test Generator v2.1",
+    status: "Generated"
+  }
+];
 
 const testCaseGeneratorData = [
   {
